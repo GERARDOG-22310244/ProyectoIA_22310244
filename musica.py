@@ -42,24 +42,26 @@ async def play(ctx, url):
         await ctx.send('No estoy conectado a un canal de voz')
         return
 
-try:
-    video = YouTube(url)
-    best_audio = video.streams.get_audio_only()
-    url2 = best_audio.url
+    try:
+        video = YouTube(url)
+        best_audio = video.streams.get_audio_only()
 
-    audio_source = FFmpegPCMAudio(url2)
-    voice_client.play(audio_source)
+        audio_source = discord.FFmpegPCMAudio(
+            best_audio.url,
+            before_options="-reconnect 1 -reconnect_at_eof 1 -reconnect_streamed 1 -reconnect_delay_max 2"
+        )
 
-    await ctx.send('Reproduciendo música de YouTube')
+        voice_client.play(audio_source)
+        await ctx.send('Reproduciendo música de YouTube')
 
-    while voice_client.is_playing():
-        await asyncio.sleep(1)
+        while voice_client.is_playing():
+            await asyncio.sleep(1)
 
-    await voice_client.disconnect()
-    await ctx.send('Reproducción finalizada, desconectado del canal de voz')
+        await voice_client.disconnect()
+        await ctx.send('Reproducción finalizada, desconectado del canal de voz')
 
-except Exception as e:
-    await ctx.send(f'Error al reproducir música: {str(e)}')
+    except Exception as e:
+        await ctx.send(f'Error al reproducir música: {str(e)}')
 
 
 
